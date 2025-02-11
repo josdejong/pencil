@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" href="pencil.png">
+
+  <title>Pencil demo</title>
+  <style>
+    body {
+      background: #f5f5f5;
+      font-family: verdana, arial, sans-serif;
+    }
+
+    #my-drawing-area {
+      width: 600px;
+      height: 400px;
+      max-width: 100%;
+      border: 1px solid #e5e5e5;
+      background: #fff;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Pencil Demo</h1>
+
+<p>
+  You can draw in the white area below.
+</p>
+<p>
+  <button type="button" id="clear">Clear</button>
+  <button type="button" id="copy-png">Copy PNG</button>
+  <button type="button" id="copy-json">Copy JSON</button>
+  <button type="button" id="save-svg">Save SVG</button>
+  <button type="button" id="save-png">Save PNG</button>
+</p>
+
+<div id="my-drawing-area"></div>
+
+<script type="module">
+  import { createDrawingArea } from "./pencil.js"
+
+  const drawingArea = createDrawingArea({
+    target: document.getElementById('my-drawing-area'),
+    onChange: () => {
+      console.log('changed', {
+        traces: drawingArea.getTraces()
+      })
+    }
+  })
+
+  window.drawingArea = drawingArea // for debugging and testing
+
+  document.getElementById('clear').addEventListener('click', () => {
+    drawingArea.clear()
+  })
+
+  document.getElementById('copy-png').addEventListener('click', async () => {
+    const data = await fetch(await drawingArea.getPNG())
+    const blob = await data.blob()
+    const image = new ClipboardItem({ [blob.type]: blob })
+
+    await navigator.clipboard.write([image])
+  })
+
+  document.getElementById('copy-json').addEventListener('click', async () => {
+    const json = drawingArea.getTraces()
+    await navigator.clipboard.writeText(JSON.stringify(json, null, 2))
+  })
+
+  document.getElementById('save-svg').addEventListener('click', () => {
+    saveImage(drawingArea.getSVG())
+  })
+
+  document.getElementById('save-png').addEventListener('click', async () => {
+    saveImage(await drawingArea.getPNG())
+  })
+
+  function saveImage (downloadUrl) {
+    const downloadImage = document.createElement("a")
+    document.body.appendChild(downloadImage)
+    downloadImage.setAttribute("download", "image")
+    downloadImage.href = downloadUrl
+    downloadImage.click()
+    downloadImage.remove()
+  }
+</script>
+</body>
+</html>

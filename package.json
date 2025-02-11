@@ -1,0 +1,22 @@
+{
+  "name": "pencil",
+  "version": "0.0.1",
+  "description": "Vector based drawing in your browser",
+  "main": "pencil.js",
+  "scripts": {
+    "lint": "biome check",
+    "format": "biome check --write"
+  },
+  "keywords": [
+    "pencil",
+    "svg",
+    "draw",
+    "html",
+    "browser"
+  ],
+  "author": "Jos de Jong",
+  "license": "ISC",
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4"
+  }
+}
