@@ -2,6 +2,8 @@
 
 Vector based drawing in your browser.
 
+Demo: https://josdejong.github.io/pencil/
+
 ## Usage
 
 ```html
