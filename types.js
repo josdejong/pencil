@@ -22,6 +22,7 @@
  * @property {HTMLDivElement} target
  * @property {string} [strokeColor = "black"]
  * @property {number} [strokeWidth = 3]
+ * @property {boolean} [enableStrikeThrough = true]
  * @property {function(): void} [onChange]
  */
 

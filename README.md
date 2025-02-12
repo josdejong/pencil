@@ -43,12 +43,13 @@ const drawingArea = createDrawingArea(config)
 
 Here, config is an object `DrawingAreaConfig` with the following properties:
 
-| Name          | Type               | Required | Description                                          |
-|---------------|--------------------|----------|------------------------------------------------------|
-| `target`      | `HTMLDivElement`   | Yes      | The HTML DIV where to create the drawing area        |
-| `strokeColor` | `string`           | No       | The color of the lines                               |
-| `strokeWidth` | `number`           | No       | The width of the lines                               |
-| `onChange`    | `function(): void` | No       | Callback which is invoked after a new line is drawn. |
+| Name          | Type               | Required | Description                                                    |
+|---------------|--------------------|----------|----------------------------------------------------------------|
+| `target`      | `HTMLDivElement`   | Yes      | The HTML DIV where to create the drawing area                  |
+| `strokeColor` | `string`           | No       | The color of the lines                                         |
+| `strokeWidth` | `number`           | No       | The width of the lines                                         |
+| `enableStrikeThrough` | `boolean`          | No       | When true, you can use strike through to clear a drawn stroke. |
+| `onChange`    | `function(): void` | No       | Callback which is invoked after a new line is drawn.           |
 
 The created `DrawingArea` has the following methods:
 

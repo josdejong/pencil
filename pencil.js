@@ -6,7 +6,16 @@ const namespaceUri = 'http://www.w3.org/2000/svg'
  * @returns {DrawingArea}
  */
 export function createDrawingArea(config) {
-  const { target, strokeColor = 'black', strokeWidth = 3, onChange = noop } = config
+  const {
+    target,
+    strokeColor = 'black',
+    strokeWidth = 3,
+    enableStrikeThrough = true,
+    onChange = noop
+  } = config
+
+  const clearStrikeThroughDelay = 300 // ms
+  const strikeThroughColor = '#f42121'
 
   if (!target) {
     throw new Error('Required property "target" not provided')
@@ -18,6 +27,8 @@ export function createDrawingArea(config) {
   let traces = []
 
   let svgPaths = []
+
+  let removedSvgPaths = []
 
   /** @type {Trace | null} */
   let newTrace = null
@@ -96,17 +107,43 @@ export function createDrawingArea(config) {
     }
   }
 
+  function addNewTrace() {
+    traces.push(newTrace)
+    newTrace = null
+
+    svgPaths.push(newSvgPath)
+    newSvgPath = null
+  }
+
+  function clearRemovedSvgPaths() {
+    for (const svgPath of removedSvgPaths) {
+      svg.removeChild(svgPath)
+    }
+
+    removedSvgPaths = []
+  }
+
   function removeStrikeThroughPaths(strikeThroughRect) {
+    removedSvgPaths.push(newSvgPath)
+
+    newTrace = null
+    newSvgPath = null
+
     for (let i = 0; i < traces.length; i++) {
       const rect = calculateBoundingRect(traces[i])
 
       if (overlap(rect, strikeThroughRect)) {
-        svg.removeChild(svgPaths[i])
+        const svgPath = svgPaths[i]
+        svgPath.setAttributeNS(null, 'stroke', strikeThroughColor)
+        removedSvgPaths.push(svgPath)
         traces.splice(i, 1)
         svgPaths.splice(i, 1)
         i--
       }
     }
+
+    // remove the deleted paths from the rendering after a bit
+    setTimeout(clearRemovedSvgPaths, clearStrikeThroughDelay)
   }
 
   function handlePointerDown(event) {
@@ -131,21 +168,12 @@ export function createDrawingArea(config) {
     event.preventDefault()
 
     if (newTrace) {
-      if (isStrikeThrough(newTrace)) {
+      if (enableStrikeThrough && isStrikeThrough(newTrace)) {
         const rect = calculateBoundingRect(newTrace)
 
         removeStrikeThroughPaths(rect)
-
-        newTrace = null
-
-        svg.removeChild(newSvgPath)
-        newSvgPath = null
       } else {
-        traces.push(newTrace)
-        newTrace = null
-
-        svgPaths.push(newSvgPath)
-        newSvgPath = null
+        addNewTrace()
       }
 
       onChange()
@@ -155,6 +183,10 @@ export function createDrawingArea(config) {
   function clear() {
     traces = []
     svgPaths = []
+    removedSvgPaths = []
+
+    newTrace = null
+    newSvgPath = null
 
     while (svg.firstChild) {
       svg.removeChild(svg.firstChild)
@@ -163,8 +195,14 @@ export function createDrawingArea(config) {
 
   return {
     getTraces: () => traces.slice(),
-    getSVG: () => svgToDataUrl(svg.outerHTML),
-    getPNG: () => svgToPng(svg.outerHTML, width, height),
+    getSVG: () => {
+      clearRemovedSvgPaths()
+      return svgToDataUrl(svg.outerHTML)
+    },
+    getPNG: () => {
+      clearRemovedSvgPaths()
+      return svgToPng(svg.outerHTML, width, height)
+    },
     clear,
     destroy: () => target.removeChild(wrapper)
   }
