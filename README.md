@@ -2,6 +2,14 @@
 
 Vector based drawing in your browser.
 
+Features:
+
+- A pure ESM JavaScript component in one file, `pencil.js`.
+- Draw using your mouse or using touch.
+- Use strike-through to remove strokes.
+- Dynamically resized drawing area.
+- Export to SVG or PNG.
+
 ## Demo
 
 Try it out: https://josdejong.github.io/pencil/
