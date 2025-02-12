@@ -132,12 +132,16 @@ export function createDrawingArea(config) {
 
       if (overlap(rect, strikeThroughRect)) {
         const svgPath = svgPaths[i]
-        svgPath.setAttributeNS(null, 'stroke', strikeThroughColor)
         removedSvgPaths.push(svgPath)
         traces.splice(i, 1)
         svgPaths.splice(i, 1)
         i--
       }
+    }
+
+    // color the paths that will be removed red
+    for (const svgPath of removedSvgPaths) {
+      svgPath.setAttributeNS(null, 'stroke', strikeThroughColor)
     }
 
     // remove the deleted paths from the rendering after a bit
