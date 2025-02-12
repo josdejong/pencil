@@ -48,8 +48,6 @@ export function createDrawingArea(config) {
   wrapper.style.height = '100%'
 
   wrapper.addEventListener('pointerdown', handlePointerDown)
-  wrapper.addEventListener('pointermove', handlePointerMove)
-  wrapper.addEventListener('pointerup', handlePointerUp)
 
   wrapper.appendChild(svg)
   target.appendChild(wrapper)
@@ -88,7 +86,7 @@ export function createDrawingArea(config) {
   }
 
   function getPoint(event) {
-    const rect = event.currentTarget.getBoundingClientRect()
+    const rect = wrapper.getBoundingClientRect()
 
     return {
       x: event.clientX - rect.x,
@@ -153,6 +151,9 @@ export function createDrawingArea(config) {
     newTrace = [point]
     newSvgPath = createSvgPath(newTrace)
     svg.appendChild(newSvgPath)
+
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
   }
 
   function handlePointerMove(event) {
@@ -166,6 +167,9 @@ export function createDrawingArea(config) {
 
   function handlePointerUp(event) {
     event.preventDefault()
+
+    window.removeEventListener('pointermove', handlePointerMove)
+    window.removeEventListener('pointerup', handlePointerUp)
 
     if (newTrace) {
       if (enableStrikeThrough && isStrikeThrough(newTrace)) {
