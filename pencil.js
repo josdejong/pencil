@@ -13,7 +13,8 @@ export function createDrawingArea(config) {
     lineWidth = 3,
     onChange = noop
   } = config
-  const { width, height } = target.getBoundingClientRect()
+
+  let { width, height } = target.getBoundingClientRect()
 
   /** @type {Trace[]} */
   let traces = []
@@ -43,6 +44,16 @@ export function createDrawingArea(config) {
 
   wrapper.appendChild(svg)
   target.appendChild(wrapper)
+
+  const resizeObserver = new ResizeObserver((_entries) => {
+    const rect = target.getBoundingClientRect()
+    width = rect.width
+    height = rect.height
+
+    svg.setAttribute('width', String(width))
+    svg.setAttribute('height', String(height))
+  })
+  resizeObserver.observe(wrapper)
 
   /**
    * @param {Trace} trace
