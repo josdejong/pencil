@@ -2,7 +2,9 @@
 
 Vector based drawing in your browser.
 
-Demo: https://josdejong.github.io/pencil/
+## Demo
+
+Try it out: https://josdejong.github.io/pencil/
 
 ## Usage
 
@@ -14,8 +16,11 @@ Demo: https://josdejong.github.io/pencil/
   <script type="module">
     import { createDrawingArea } from "./pencil.js"
   
-    const target = document.getElementById('my-drawing-area')
-    const drawingArea = createDrawingArea({ target })
+    const drawingArea = createDrawingArea({ 
+      target: document.getElementById('my-drawing-area'),
+      color: 'black',
+      activeColor: 'red'
+    })
   </script>
 </body>
 </html>
@@ -27,15 +32,15 @@ Demo: https://josdejong.github.io/pencil/
 const drawingArea = createDrawingArea(config)
 ```
 
-With the following `DrawingAreaConfig` options:
+Here, config is an object `DrawingAreaConfig` with the following properties:
 
-| Name          | Type               | Description                                          |
-|---------------|--------------------|------------------------------------------------------|
-| `target`      | `HTMLDivElement`   | The HTML DIV where to create the drawing area        |
-| `color`       | `string`           | The color of the lines                               |
-| `activeColor` | `string`           | The color that the line has while drawing it         |
-| `lineWidth`   | `number`           | The width of the lines                               |
-| `onChange`    | `function(): void` | Callback which is invoked after a new line is drawn. |
+| Name          | Type               | Required | Description                                          |
+|---------------|--------------------|----------|------------------------------------------------------|
+| `target`      | `HTMLDivElement`   | Yes      | The HTML DIV where to create the drawing area        |
+| `color`       | `string`           | No       | The color of the lines                               |
+| `activeColor` | `string`           | No       | The color that the line has while drawing it         |
+| `lineWidth`   | `number`           | No       | The width of the lines                               |
+| `onChange`    | `function(): void` | No       | Callback which is invoked after a new line is drawn. |
 
 The created `DrawingArea` has the following methods:
 
