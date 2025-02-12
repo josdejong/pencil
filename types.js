@@ -12,9 +12,8 @@
 /**
  * @typedef {Object} DrawingAreaConfig
  * @property {HTMLDivElement} target
- * @property {string} [color = "black"]
- * @property {string} [activeColor = "#$f31717"]
- * @property {number} [lineWidth = 3]
+ * @property {string} [strokeColor = "black"]
+ * @property {number} [strokeWidth = 3]
  * @property {function(): void} [onChange]
  */
 

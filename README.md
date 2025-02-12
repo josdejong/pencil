@@ -8,6 +8,8 @@ Try it out: https://josdejong.github.io/pencil/
 
 ## Usage
 
+You need one file: `pencil.js`.
+
 ```html
 <html lang="en">
 <body>
@@ -18,8 +20,7 @@ Try it out: https://josdejong.github.io/pencil/
   
     const drawingArea = createDrawingArea({ 
       target: document.getElementById('my-drawing-area'),
-      color: 'black',
-      activeColor: 'red'
+      strokeColor: 'black'
     })
   </script>
 </body>
@@ -37,9 +38,8 @@ Here, config is an object `DrawingAreaConfig` with the following properties:
 | Name          | Type               | Required | Description                                          |
 |---------------|--------------------|----------|------------------------------------------------------|
 | `target`      | `HTMLDivElement`   | Yes      | The HTML DIV where to create the drawing area        |
-| `color`       | `string`           | No       | The color of the lines                               |
-| `activeColor` | `string`           | No       | The color that the line has while drawing it         |
-| `lineWidth`   | `number`           | No       | The width of the lines                               |
+| `strokeColor` | `string`           | No       | The color of the lines                               |
+| `strokeWidth` | `number`           | No       | The width of the lines                               |
 | `onChange`    | `function(): void` | No       | Callback which is invoked after a new line is drawn. |
 
 The created `DrawingArea` has the following methods:

@@ -6,13 +6,7 @@ const namespaceUri = 'http://www.w3.org/2000/svg'
  * @returns {DrawingArea}
  */
 export function createDrawingArea(config) {
-  const {
-    target,
-    color = 'black',
-    activeColor = '#f31717',
-    lineWidth = 3,
-    onChange = noop
-  } = config
+  const { target, strokeColor = 'black', strokeWidth = 3, onChange = noop } = config
 
   let { width, height } = target.getBoundingClientRect()
 
@@ -57,30 +51,25 @@ export function createDrawingArea(config) {
 
   /**
    * @param {Trace} trace
-   * @param {string} color
    * @return {SVGPathElement}
    */
-  function createSvgPath(trace, color) {
+  function createSvgPath(trace) {
     // in case of a dot, we create 2 points
     const path =
       trace.length <= 1 ? toSvgPath([...trace, ...trace], height) : toSvgPath(trace, height)
 
     const svgPath = document.createElementNS(namespaceUri, 'path')
     svgPath.setAttributeNS(null, 'd', path)
-    svgPath.setAttributeNS(null, 'stroke', color)
+    svgPath.setAttributeNS(null, 'stroke', strokeColor)
     svgPath.setAttributeNS(null, 'stroke-linecap', 'round')
     svgPath.setAttributeNS(null, 'fill', 'transparent')
-    svgPath.style.strokeWidth = String(lineWidth)
+    svgPath.setAttributeNS(null, 'stroke-width', String(strokeWidth))
 
     return svgPath
   }
 
   function updateSvgPath(svgPath, trace) {
     svgPath.setAttributeNS(null, 'd', toSvgPath(trace, height))
-  }
-
-  function updateSvgColor(svgPath, color) {
-    svgPath.setAttributeNS(null, 'stroke', color)
   }
 
   function getPoint(event) {
@@ -108,7 +97,7 @@ export function createDrawingArea(config) {
 
     const point = getPoint(event)
     newTrace = [point]
-    newSvgPath = createSvgPath(newTrace, activeColor)
+    newSvgPath = createSvgPath(newTrace)
     svg.appendChild(newSvgPath)
   }
 
@@ -128,7 +117,6 @@ export function createDrawingArea(config) {
       traces.push(newTrace)
       newTrace = null
 
-      updateSvgColor(newSvgPath, color)
       svgPaths.push(newSvgPath)
       newSvgPath = null
 

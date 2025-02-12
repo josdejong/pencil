@@ -48,6 +48,8 @@
 
   const drawingArea = createDrawingArea({
     target: document.getElementById('my-drawing-area'),
+    strokeColor: '#4d4d4d',
+    strokeWidth: 3,
     onChange: () => {
       console.log('changed', {
         traces: drawingArea.getTraces()
