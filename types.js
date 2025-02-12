@@ -10,6 +10,14 @@
  */
 
 /**
+ * @typedef {Object} TraceRect
+ * @property {number} xMin
+ * @property {number} xMax
+ * @property {number} yMin
+ * @property {number} yMax
+ */
+
+/**
  * @typedef {Object} DrawingAreaConfig
  * @property {HTMLDivElement} target
  * @property {string} [strokeColor = "black"]

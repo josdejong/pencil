@@ -8,6 +8,10 @@ const namespaceUri = 'http://www.w3.org/2000/svg'
 export function createDrawingArea(config) {
   const { target, strokeColor = 'black', strokeWidth = 3, onChange = noop } = config
 
+  if (!target) {
+    throw new Error('Required property "target" not provided')
+  }
+
   let { width, height } = target.getBoundingClientRect()
 
   /** @type {Trace[]} */
@@ -92,6 +96,19 @@ export function createDrawingArea(config) {
     }
   }
 
+  function removeStrikeThroughPaths(strikeThroughRect) {
+    for (let i = 0; i < traces.length; i++) {
+      const rect = calculateBoundingRect(traces[i])
+
+      if (overlap(rect, strikeThroughRect)) {
+        svg.removeChild(svgPaths[i])
+        traces.splice(i, 1)
+        svgPaths.splice(i, 1)
+        i--
+      }
+    }
+  }
+
   function handlePointerDown(event) {
     event.preventDefault()
 
@@ -114,11 +131,22 @@ export function createDrawingArea(config) {
     event.preventDefault()
 
     if (newTrace) {
-      traces.push(newTrace)
-      newTrace = null
+      if (isStrikeThrough(newTrace)) {
+        const rect = calculateBoundingRect(newTrace)
 
-      svgPaths.push(newSvgPath)
-      newSvgPath = null
+        removeStrikeThroughPaths(rect)
+
+        newTrace = null
+
+        svg.removeChild(newSvgPath)
+        newSvgPath = null
+      } else {
+        traces.push(newTrace)
+        newTrace = null
+
+        svgPaths.push(newSvgPath)
+        newSvgPath = null
+      }
 
       onChange()
     }
@@ -154,6 +182,90 @@ function toSvgPath(trace, height) {
   const restPoints = rest.map(({ x, y }) => `L${x},${height - y}`).join(' ')
 
   return firstPoint + restPoints
+}
+
+/**
+ * Calculate the bounds of a trace
+ * @param {Trace} trace
+ * @returns {TraceRect}
+ */
+function calculateBoundingRect(trace) {
+  return {
+    xMin: Math.min(...trace.map((point) => point.x)),
+    xMax: Math.max(...trace.map((point) => point.x)),
+    yMin: Math.min(...trace.map((point) => point.y)),
+    yMax: Math.max(...trace.map((point) => point.y))
+  }
+}
+
+/**
+ * Test whether two rects overlap
+ * @param {TraceRect} rect1
+ * @param {TraceRect} rect2
+ * @return {boolean}
+ */
+function overlap(rect1, rect2) {
+  return (
+    rect1.xMin < rect2.xMax &&
+    rect1.xMax > rect2.xMin &&
+    rect1.yMin < rect2.yMax &&
+    rect1.yMax > rect2.yMin
+  )
+}
+
+/**
+ * Determine whether a trace is a strike through
+ * @param {Trace} trace
+ * @return {boolean}
+ */
+function isStrikeThrough(trace) {
+  const changes = calculateChangeInDirections(trace)
+
+  // TODO: better detect large changes by looking at the sum of 2 or 3 consecutive changes:
+  //  a large change can be split over two or 3 points if you write slow
+  const largeChanges = changes.filter((change) => Math.abs(change) > 0.5 * Math.PI)
+
+  return largeChanges.length >= 3
+}
+
+function calculateChangeInDirections(trace) {
+  const directions = calculateDirections(trace)
+  const changes = []
+
+  for (let i = 0; i < directions.length - 1; i++) {
+    const current = directions[i]
+    const next = directions[i + 1]
+    const change = next - current
+
+    const normalizedChange =
+      change > Math.PI ? change - 2 * Math.PI : change < -Math.PI ? change + 2 * Math.PI : change
+
+    changes.push(normalizedChange)
+  }
+
+  return changes
+}
+
+/**
+ * Calculated the directions, the angles, in radians between each of the points.
+ * Returns the normalized directions, adjusted for flipping 1 circle at +pi or -pi.
+ * @param {Trace} trace
+ * @return {number[]}
+ */
+function calculateDirections(trace) {
+  const directions = []
+
+  for (let i = 0; i < trace.length - 1; i++) {
+    const current = trace[i]
+    const next = trace[i + 1]
+    const dx = next.x - current.x
+    const dy = next.y - current.y
+    const direction = Math.atan2(dx, dy)
+
+    directions.push(direction)
+  }
+
+  return directions
 }
 
 function noop() {}

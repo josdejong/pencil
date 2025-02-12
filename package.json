@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Vector based drawing in your browser",
   "main": "pencil.js",
+  "type": "module",
   "scripts": {
     "lint": "biome check",
     "format": "biome check --write"
