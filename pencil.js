@@ -149,9 +149,7 @@ export function createDrawingArea(config) {
     removedTraces = []
     newTrace = null
 
-    while (svg.firstChild) {
-      svg.removeChild(svg.firstChild)
-    }
+    render()
   }
 
   function render() {
