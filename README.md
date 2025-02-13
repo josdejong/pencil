@@ -59,4 +59,4 @@ The created `DrawingArea` has the following methods:
 | `getSVG`    | `function(): string`          | The color of the lines                        |
 | `getPNG`    | `function(): Promise<string>` | The color that the line has while drawing it  |
 | `clear`     | `function(): void`            | Clear all drawn lines.                        |
-| `destroy`   | `function( : void`            | Destroy the drawing area.                     |
+| `destroy`   | `function() : void`           | Destroy the drawing area.                     |

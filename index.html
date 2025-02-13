@@ -12,6 +12,19 @@
       font-family: verdana, arial, sans-serif;
     }
 
+    p.menu {
+      line-height: 1.7em;
+    }
+
+    label {
+        padding: 2px 5px 2px 0;
+        border-radius: 3px;
+    }
+
+    label:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
     #my-drawing-area {
       width: 600px;
       height: 400px;
@@ -27,9 +40,10 @@
 <h1>Pencil demo</h1>
 
 <p>
-  You can draw in the white area below, and use strike through to remove strokes again.
+  You can draw in the white area below. When enabled, you can use strike through to remove strokes again.
 </p>
-<p>
+<p class="menu">
+  <label><input type="checkbox" id="strike-through" checked /> Enable strike through</label>
   <button type="button" id="clear">Clear</button>
   <button type="button" id="copy-png">Copy PNG</button>
   <button type="button" id="copy-json">Copy JSON</button>
@@ -46,18 +60,30 @@
 <script type="module">
   import { createDrawingArea } from "./pencil.js"
 
-  const drawingArea = createDrawingArea({
-    target: document.getElementById('my-drawing-area'),
-    strokeColor: '#4d4d4d',
-    strokeWidth: 3,
-    onChange: () => {
-      console.log('changed', {
-        traces: drawingArea.getTraces()
-      })
-    }
-  })
+  function init(enableStrikeThrough) {
+    return createDrawingArea({
+      target: document.getElementById('my-drawing-area'),
+      strokeColor: '#4d4d4d',
+      strokeWidth: 3,
+      enableStrikeThrough,
+      onChange: () => {
+        console.log('changed', {
+          traces: drawingArea.getTraces()
+        })
+      }
+    })
+  }
 
+  const strikeThroughInput = document.getElementById('strike-through')
+
+  let drawingArea = init(strikeThroughInput.checked)
   window.drawingArea = drawingArea // for debugging and testing
+
+  strikeThroughInput.addEventListener('change', () => {
+    drawingArea.destroy()
+    drawingArea = init(strikeThroughInput.checked)
+    window.drawingArea = drawingArea // for debugging and testing
+  })
 
   document.getElementById('clear').addEventListener('click', () => {
     drawingArea.clear()
