@@ -155,25 +155,20 @@ export function createDrawingArea(config) {
   }
 
   function render() {
-    /**
-     * @param {number} index
-     * @param {string} path
-     * @param {string} color
-     */
-    function createOrUpdatePath(index, path, color) {
-      /** @type {SVGPathElement} */
-      const svgPath = svg.childNodes[index]
+    const regularTraces = newTrace ? [...traces, newTrace] : traces
+    const paths = [
+      ...regularTraces.map((trace) => [toSvgPath(trace, height), strokeColor]),
+      ...removedTraces.map((trace) => [toSvgPath(trace, height), strikeThroughColor])
+    ]
 
+    for (let i = 0; i < paths.length; i++) {
+      const [path, color] = paths[i]
+
+      const svgPath = svg.childNodes[i]
       if (svgPath) {
         // update existing path
-        if (svgPath.getAttributeNS(null, 'd') !== path) {
-          svgPath.setAttributeNS(null, 'd', path)
-        }
-
-        // update existing color
-        if (svgPath.getAttributeNS(null, 'stroke') !== color) {
-          svgPath.setAttributeNS(null, 'stroke', color)
-        }
+        svgPath.setAttributeNS(null, 'd', path)
+        svgPath.setAttributeNS(null, 'stroke', color)
       } else {
         // create a new path
         const svgPath = document.createElementNS(namespaceUri, 'path')
@@ -182,28 +177,11 @@ export function createDrawingArea(config) {
         svgPath.setAttributeNS(null, 'stroke-linecap', 'round')
         svgPath.setAttributeNS(null, 'fill', 'transparent')
         svgPath.setAttributeNS(null, 'stroke-width', String(strokeWidth))
-
         svg.appendChild(svgPath)
       }
     }
 
-    for (let i = 0; i < traces.length; i++) {
-      createOrUpdatePath(i, toSvgPath(traces[i], height), strokeColor)
-    }
-
-    for (let i = 0; i < removedTraces.length; i++) {
-      createOrUpdatePath(traces.length + i, toSvgPath(removedTraces[i], height), strikeThroughColor)
-    }
-
-    if (newTrace) {
-      createOrUpdatePath(
-        traces.length + removedTraces.length,
-        toSvgPath(newTrace, height),
-        strokeColor
-      )
-    }
-
-    while (svg.childElementCount > traces.length + removedTraces.length + newTrace ? 1 : 0) {
+    while (svg.childElementCount > paths.length) {
       svg.removeChild(svg.lastChild)
     }
   }
