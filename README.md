@@ -53,10 +53,10 @@ Here, config is an object `DrawingAreaConfig` with the following properties:
 
 The created `DrawingArea` has the following methods:
 
-| Name        | Type                          | Description                                   |
-|-------------|-------------------------------|-----------------------------------------------|
-| `getTraces` | `function(): Trace[]`         | The HTML DIV where to create the drawing area |
-| `getSVG`    | `function(): string`          | The color of the lines                        |
-| `getPNG`    | `function(): Promise<string>` | The color that the line has while drawing it  |
-| `clear`     | `function(): void`            | Clear all drawn lines.                        |
-| `destroy`   | `function() : void`           | Destroy the drawing area.                     |
+| Name        | Type                          | Description                                |
+|-------------|-------------------------------|--------------------------------------------|
+| `getTraces` | `function(): Trace[]`         | Get a list with all traces as JSON         |
+| `getSVG`    | `function(): string`          | Get a data url containing the image as SVG |
+| `getPNG`    | `function(): Promise<string>` | Get a data url containing the image as PNG |
+| `clear`     | `function(): void`            | Clear all drawn lines.                     |
+| `destroy`   | `function() : void`           | Destroy the drawing area.                  |
