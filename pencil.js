@@ -26,14 +26,11 @@ export function createDrawingArea(config) {
   /** @type {Trace[]} */
   let traces = []
 
-  let svgPaths = []
-
-  let removedSvgPaths = []
+  /** @type {Trace[]} */
+  let removedTraces = []
 
   /** @type {Trace | null} */
   let newTrace = null
-
-  let newSvgPath = null
 
   const svg = document.createElementNS(namespaceUri, 'svg')
   svg.setAttribute('xmlns', namespaceUri)
@@ -62,29 +59,6 @@ export function createDrawingArea(config) {
   })
   resizeObserver.observe(wrapper)
 
-  /**
-   * @param {Trace} trace
-   * @return {SVGPathElement}
-   */
-  function createSvgPath(trace) {
-    // in case of a dot, we create 2 points
-    const path =
-      trace.length <= 1 ? toSvgPath([...trace, ...trace], height) : toSvgPath(trace, height)
-
-    const svgPath = document.createElementNS(namespaceUri, 'path')
-    svgPath.setAttributeNS(null, 'd', path)
-    svgPath.setAttributeNS(null, 'stroke', strokeColor)
-    svgPath.setAttributeNS(null, 'stroke-linecap', 'round')
-    svgPath.setAttributeNS(null, 'fill', 'transparent')
-    svgPath.setAttributeNS(null, 'stroke-width', String(strokeWidth))
-
-    return svgPath
-  }
-
-  function updateSvgPath(svgPath, trace) {
-    svgPath.setAttributeNS(null, 'd', toSvgPath(trace, height))
-  }
-
   function getPoint(event) {
     const rect = wrapper.getBoundingClientRect()
 
@@ -98,10 +72,8 @@ export function createDrawingArea(config) {
   function addPoint(point) {
     if (newTrace) {
       newTrace.push(point)
-    }
 
-    if (newSvgPath) {
-      updateSvgPath(newSvgPath, newTrace)
+      render()
     }
   }
 
@@ -109,43 +81,28 @@ export function createDrawingArea(config) {
     traces.push(newTrace)
     newTrace = null
 
-    svgPaths.push(newSvgPath)
-    newSvgPath = null
+    render()
   }
 
-  function clearRemovedSvgPaths() {
-    for (const svgPath of removedSvgPaths) {
-      svg.removeChild(svgPath)
-    }
+  function clearRemovedTraces() {
+    removedTraces = []
 
-    removedSvgPaths = []
+    render()
   }
 
   function removeStrikeThroughPaths(strikeThroughRect) {
-    removedSvgPaths.push(newSvgPath)
-
-    newTrace = null
-    newSvgPath = null
-
     for (let i = 0; i < traces.length; i++) {
-      // const rect = calculateBoundingRect(traces[i])
-
       if (traces[i].some((point) => pointInRect(point, strikeThroughRect))) {
-        const svgPath = svgPaths[i]
-        removedSvgPaths.push(svgPath)
+        removedTraces.push(traces[i])
         traces.splice(i, 1)
-        svgPaths.splice(i, 1)
         i--
       }
     }
 
-    // color the paths that will be removed red
-    for (const svgPath of removedSvgPaths) {
-      svgPath.setAttributeNS(null, 'stroke', strikeThroughColor)
-    }
+    render()
 
     // remove the deleted paths from the rendering after a bit
-    setTimeout(clearRemovedSvgPaths, clearStrikeThroughDelay)
+    setTimeout(clearRemovedTraces, clearStrikeThroughDelay)
   }
 
   function handlePointerDown(event) {
@@ -153,8 +110,6 @@ export function createDrawingArea(config) {
 
     const point = getPoint(event)
     newTrace = [point]
-    newSvgPath = createSvgPath(newTrace)
-    svg.appendChild(newSvgPath)
 
     window.addEventListener('pointermove', handlePointerMove)
     window.addEventListener('pointerup', handlePointerUp)
@@ -176,12 +131,13 @@ export function createDrawingArea(config) {
     window.removeEventListener('pointerup', handlePointerUp)
 
     if (newTrace) {
-      if (enableStrikeThrough && isStrikeThrough(newTrace)) {
-        const rect = calculateBoundingRect(newTrace)
+      const _newTrace = newTrace
+      addNewTrace()
+
+      if (enableStrikeThrough && isStrikeThrough(_newTrace)) {
+        const rect = calculateBoundingRect(_newTrace)
 
         removeStrikeThroughPaths(rect)
-      } else {
-        addNewTrace()
       }
 
       onChange()
@@ -190,25 +146,76 @@ export function createDrawingArea(config) {
 
   function clear() {
     traces = []
-    svgPaths = []
-    removedSvgPaths = []
-
+    removedTraces = []
     newTrace = null
-    newSvgPath = null
 
     while (svg.firstChild) {
       svg.removeChild(svg.firstChild)
     }
   }
 
+  function render() {
+    /**
+     * @param {number} index
+     * @param {string} path
+     * @param {string} color
+     */
+    function createOrUpdatePath(index, path, color) {
+      /** @type {SVGPathElement} */
+      const svgPath = svg.childNodes[index]
+
+      if (svgPath) {
+        // update existing path
+        if (svgPath.getAttributeNS(null, 'd') !== path) {
+          svgPath.setAttributeNS(null, 'd', path)
+        }
+
+        // update existing color
+        if (svgPath.getAttributeNS(null, 'stroke') !== color) {
+          svgPath.setAttributeNS(null, 'stroke', color)
+        }
+      } else {
+        // create a new path
+        const svgPath = document.createElementNS(namespaceUri, 'path')
+        svgPath.setAttributeNS(null, 'd', path)
+        svgPath.setAttributeNS(null, 'stroke', color)
+        svgPath.setAttributeNS(null, 'stroke-linecap', 'round')
+        svgPath.setAttributeNS(null, 'fill', 'transparent')
+        svgPath.setAttributeNS(null, 'stroke-width', String(strokeWidth))
+
+        svg.appendChild(svgPath)
+      }
+    }
+
+    for (let i = 0; i < traces.length; i++) {
+      createOrUpdatePath(i, toSvgPath(traces[i], height), strokeColor)
+    }
+
+    for (let i = 0; i < removedTraces.length; i++) {
+      createOrUpdatePath(traces.length + i, toSvgPath(removedTraces[i], height), strikeThroughColor)
+    }
+
+    if (newTrace) {
+      createOrUpdatePath(
+        traces.length + removedTraces.length,
+        toSvgPath(newTrace, height),
+        strokeColor
+      )
+    }
+
+    while (svg.childElementCount > traces.length + removedTraces.length + newTrace ? 1 : 0) {
+      svg.removeChild(svg.lastChild)
+    }
+  }
+
   return {
     getTraces: () => traces.slice(),
     getSVG: () => {
-      clearRemovedSvgPaths()
+      clearRemovedTraces()
       return svgToDataUrl(svg.outerHTML)
     },
     getPNG: () => {
-      clearRemovedSvgPaths()
+      clearRemovedTraces()
       return svgToPng(svg.outerHTML, width, height)
     },
     clear,
