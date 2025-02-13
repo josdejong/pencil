@@ -44,6 +44,8 @@
 </p>
 <p class="menu">
   <label><input type="checkbox" id="strike-through" checked /> Enable strike through</label>
+  <button type="button" id="undo">Undo</button>
+  <button type="button" id="redo">Redo</button>
   <button type="button" id="clear">Clear</button>
   <button type="button" id="copy-png">Copy PNG</button>
   <button type="button" id="copy-json">Copy JSON</button>
@@ -85,9 +87,11 @@
     window.drawingArea = drawingArea // for debugging and testing
   })
 
-  document.getElementById('clear').addEventListener('click', () => {
-    drawingArea.clear()
-  })
+  document.getElementById('undo').addEventListener('click', drawingArea.undo)
+
+  document.getElementById('redo').addEventListener('click', drawingArea.redo)
+
+  document.getElementById('clear').addEventListener('click', drawingArea.clear)
 
   document.getElementById('copy-png').addEventListener('click', async () => {
     const data = await fetch(await drawingArea.getPNG())

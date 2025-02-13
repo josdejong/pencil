@@ -31,6 +31,19 @@
  * @property {function(): Trace[]} getTraces
  * @property {function(): string} getSVG
  * @property {function(): Promise<string>} getPNG
+ * @property {function(): void} undo
+ * @property {function(): void} redo
  * @property {function(): void} clear
  * @property {function(): void} destroy
+ */
+
+/**
+ * @typedef {Object} History
+ * @template T
+ * @property {function(item: T)} add
+ * @property {function(): T | undefined} undo
+ * @property {function(): T | undefined} redo
+ * @property {function(): void} clear
+ * @property {function(): boolean} canUndo
+ * @property {function(): boolean} canRedo
  */

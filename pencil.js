@@ -32,6 +32,8 @@ export function createDrawingArea(config) {
   /** @type {Trace | null} */
   let newTrace = null
 
+  const history = createHistory()
+
   const svg = document.createElementNS(namespaceUri, 'svg')
   svg.setAttribute('xmlns', namespaceUri)
   svg.setAttribute('width', String(width))
@@ -140,6 +142,8 @@ export function createDrawingArea(config) {
         removeStrikeThroughPaths(rect)
       }
 
+      history.add(traces.slice())
+
       onChange()
     }
   }
@@ -148,6 +152,8 @@ export function createDrawingArea(config) {
     traces = []
     removedTraces = []
     newTrace = null
+
+    history.clear()
 
     render()
   }
@@ -184,6 +190,16 @@ export function createDrawingArea(config) {
     }
   }
 
+  function undo() {
+    traces = history.undo()?.slice() ?? []
+    render()
+  }
+
+  function redo() {
+    traces = history.redo()?.slice() ?? traces
+    render()
+  }
+
   return {
     getTraces: () => traces.slice(),
     getSVG: () => {
@@ -194,6 +210,8 @@ export function createDrawingArea(config) {
       clearRemovedTraces()
       return svgToPng(svg.outerHTML, width, height)
     },
+    undo,
+    redo,
     clear,
     destroy: () => target.removeChild(wrapper)
   }
@@ -335,4 +353,62 @@ async function svgToPng(svg, width, height) {
   ctx.drawImage(img, 0, 0, width, height)
 
   return canvas.toDataURL('image/png')
+}
+
+/**
+ * @returns {History}
+ */
+export function createHistory() {
+  const maxItems = 1000
+
+  // items in history are sorted from newest first to oldest last
+  let reverseItems = []
+
+  let index = 0
+
+  function canUndo() {
+    return index < reverseItems.length
+  }
+
+  function canRedo() {
+    return index > 0
+  }
+
+  function add(item) {
+    reverseItems = [item].concat(reverseItems.slice(index)).slice(0, maxItems)
+
+    index = 0
+  }
+
+  function clear() {
+    reverseItems = []
+    index = 0
+  }
+
+  function undo() {
+    if (canUndo()) {
+      index += 1
+      return reverseItems[index]
+    }
+
+    return undefined
+  }
+
+  function redo() {
+    if (canRedo()) {
+      index -= 1
+      return reverseItems[index]
+    }
+
+    return undefined
+  }
+
+  return {
+    canUndo,
+    canRedo,
+    add,
+    undo,
+    redo,
+    clear
+  }
 }
