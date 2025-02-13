@@ -128,9 +128,9 @@ export function createDrawingArea(config) {
     newSvgPath = null
 
     for (let i = 0; i < traces.length; i++) {
-      const rect = calculateBoundingRect(traces[i])
+      // const rect = calculateBoundingRect(traces[i])
 
-      if (overlap(rect, strikeThroughRect)) {
+      if (traces[i].some((point) => pointInRect(point, strikeThroughRect))) {
         const svgPath = svgPaths[i]
         removedSvgPaths.push(svgPath)
         traces.splice(i, 1)
@@ -245,17 +245,14 @@ function calculateBoundingRect(trace) {
 }
 
 /**
- * Test whether two rects overlap
- * @param {TraceRect} rect1
- * @param {TraceRect} rect2
+ * Test whether a point lies inside a rect
+ * @param {Point} point
+ * @param {TraceRect} rect
  * @return {boolean}
  */
-function overlap(rect1, rect2) {
+function pointInRect(point, rect) {
   return (
-    rect1.xMin < rect2.xMax &&
-    rect1.xMax > rect2.xMin &&
-    rect1.yMin < rect2.yMax &&
-    rect1.yMax > rect2.yMin
+    point.x >= rect.xMin && point.x <= rect.xMax && point.y >= rect.yMin && point.y <= rect.yMax
   )
 }
 
