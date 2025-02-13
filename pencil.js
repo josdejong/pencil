@@ -264,11 +264,16 @@ function pointInRect(point, rect) {
 function isStrikeThrough(trace) {
   const changes = calculateChangeInDirections(trace)
 
-  // TODO: better detect large changes by looking at the sum of 2 or 3 consecutive changes:
-  //  a large change can be split over two or 3 points if you write slow
-  const largeChanges = changes.filter((change) => Math.abs(change) > 0.5 * Math.PI)
+  let largeChanges = 0
+  for (let i = 0; i < changes.length - 1; i++) {
+    // We look at the sum of two consecutive changes because often a switch
+    // in direction is spread over two or even three points in time.
+    if (Math.abs(changes[i] + changes[i + 1]) > 0.5 * Math.PI) {
+      largeChanges++
+    }
+  }
 
-  return largeChanges.length >= 3
+  return largeChanges >= 5
 }
 
 function calculateChangeInDirections(trace) {
